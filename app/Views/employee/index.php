@@ -13,7 +13,7 @@
         <div class="table-responsive border">
             <table class="table table-hover table-striped">
                 <thead>
-                    <tr>
+                    <tr class="text-nowrap">
                         <th scope="col">Name</th>
                         <th scope="col">Contact No.</th>
                         <th scope="col">Email</th>

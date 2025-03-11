@@ -2,25 +2,30 @@
 
 namespace App\Controllers;
 
-use App\Models\Employee;
-use CodeIgniter\HTTP\RedirectResponse;
+use App\Models\EmployeeModel;
 
 class EmployeeController extends BaseController
 {
-    
-    public function index(): string
+
+    public function index()
     {
-        $employee = new Employee();
-        $data['employees'] = $employee->findAll();
-        return view('employee/index', $data);
+        if (session()->get('isLoggedIn')) {
+            $employee = new EmployeeModel();
+            $data['employees'] = $employee->findAllEmployees();
+            return view('employee/index', $data);
+        } else {
+            return redirect()->to(base_url('auth/login'));
+        }
     }
 
-    public function addEmployee(): string {
+    public function addEmployee(): string
+    {
         return view('employee/addEmployee');
     }
 
-    public function createEmployee(): RedirectResponse {
-        $employee = new Employee();
+    public function createEmployee()
+    {
+        $employee = new EmployeeModel();
         $formData = [
             'first_name' => $this->request->getPost('firstName'),
             'last_name' => $this->request->getPost('lastName'),
@@ -29,20 +34,29 @@ class EmployeeController extends BaseController
             'employee_role' => $this->request->getPost('employeeRole')
         ];
 
-        $employee->save($formData);
 
-        return redirect()->to(base_url('employee'))->with('success', 'Employee added successfully.');
+        if ($employee->createEmployeeProced($formData)) {
+            return redirect()->to(base_url('employee'))->with('success', 'Employee added successfully.');
+        } else {
+            return redirect()->to(base_url('employee'))->with('error', 'Something wrong happened.');
+        }
     }
 
-    public function editEmployee($id) {
-        $employee = new Employee();
-        $data['employee'] = $employee->find($id);
+    public function editEmployee($id)
+    {
+        $employee = new EmployeeModel();
+        $data['employee'] = $employee->findEmployeeById($id);
 
-        return view('employee/editEmployee', $data);
+        if ($data['employee']) {
+            return view('employee/editEmployee', $data);
+        } else {
+            return redirect()->to(base_url('employee'))->with('error', 'Employee not found.');
+        }
     }
 
-    public function updateEmployee($id) {
-        $employee = new Employee();
+    public function updateEmployee($id)
+    {
+        $employee = new EmployeeModel();
         $employee->find($id);
         $formData = [
             'first_name' => $this->request->getPost('firstName'),
@@ -56,10 +70,11 @@ class EmployeeController extends BaseController
 
     }
 
-    public function deleteEmployee($id) {
-        $employee = new Employee();
+    public function deleteEmployee($id)
+    {
+        $employee = new EmployeeModel();
         $employee->delete($id);
 
-        return redirect()->to(base_url('employee'))->with('success', 'Employee deleted successfully.');
+        return redirect()->to(base_url('employee'))->with('error', 'Employee deleted successfully.');
     }
 }
