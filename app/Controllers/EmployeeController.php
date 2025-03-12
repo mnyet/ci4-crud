@@ -10,7 +10,7 @@ class EmployeeController extends BaseController
 
     public function __construct()
     {
-        helper(['url', 'form', 'Form']);
+        helper(['url', 'Form']);
         $this->employee = new EmployeeModel();
     }
 
