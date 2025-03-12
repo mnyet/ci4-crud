@@ -7,17 +7,19 @@ use App\Models\UserModel;
 
 class AuthController extends BaseController
 {
+
+    protected $user;
+
     public function __construct()
     {
         helper(['url', 'Form']);
+        $this->user = new UserModel();
     }
-
-    protected $isLoggedIn = false;
 
     public function index() // If url goes to '/'
     {
-        if (session()->get('isLoggedIn')) {
-            return redirect()->to(base_url('employee'));
+        if(session()->get('isLoggedIn')){
+            return redirect()->to(base_url(relativePath: 'employee'));
         } else {
             return redirect()->to(base_url('auth/login'));
         }
@@ -25,20 +27,14 @@ class AuthController extends BaseController
 
     public function login()
     {
-        if (session()->get('isLoggedIn')) {
-            return redirect()->to(base_url('employee'));
-        } else {
-            return view('auth/login');
-        }
+        return view('auth/login');
     }
 
     public function loginUser()
     {
-        $user = new UserModel();
-
         $validation = $this->validate([
             'loginEmail' => [
-                'rules' => 'required|valid_email|is_not_unique[' . $user->table . '.email]',
+                'rules' => 'required|valid_email|is_not_unique[' . $this->user->table . '.email]',
                 'errors' => [
                     'required' => 'Please fill up this field.',
                     'valid_email' => 'Please enter a valid email address.',
@@ -64,12 +60,13 @@ class AuthController extends BaseController
                 'password' => $this->request->getPost('loginPassword')
             ];
 
-            $userData = $user->findUserByEmail($loginData['email']);
+            $userData = $this->user->findUserByEmail($loginData['email']);
 
-            if(Hash::checkPassword($loginData['password'], $userData['password'])) {
+            if (Hash::checkPassword($loginData['password'], $userData['password'])) {
                 session()->set('isLoggedIn', true);
                 session()->set('userId', $userData['id']);
                 session()->set('userName', $userData['name']);
+
                 return redirect()->to(base_url('employee'))->with('success', 'Logged in successfully.');
             } else {
                 return redirect()->to(base_url('auth/login'))->with('error', 'Credentials does not match.');
@@ -79,17 +76,11 @@ class AuthController extends BaseController
 
     public function signup()
     {
-        if (session()->get('isLoggedIn')) {
-            return redirect()->to(base_url('employee'));
-        } else {
-            return view('auth/signup');
-        }
+        return view('auth/signup');
     }
 
     public function createUser()
     {
-        $user = new UserModel();
-
         $validation = $this->validate([
             'signupName' => [
                 'rules' => 'required|min_length[3]',
@@ -100,7 +91,7 @@ class AuthController extends BaseController
             ],
 
             'signupEmail' => [
-                'rules' => 'required|valid_email|is_unique[' . $user->table . '.email]', // [(table_name).(field to verify)]
+                'rules' => 'required|valid_email|is_unique[' . $this->user->table . '.email]', // [(table_name).(field to verify)]
                 'errors' => [
                     'required' => 'Please fill up this field.',
                     'valid_email' => 'Please enter a valid email address.',
@@ -128,7 +119,13 @@ class AuthController extends BaseController
                 'password' => Hash::make($this->request->getPost('signupPassword'))
             ];
 
-            if ($user->createNewUser($signupData)) {
+            if ($this->user->createNewUser($signupData)) {
+                $userData = $this->user->findUserByEmail($signupData['email']);
+
+                session()->set('isLoggedIn', true);
+                session()->set('userId', $userData['id']);
+                session()->set('userName', $userData['name']);
+
                 return redirect()->to(base_url('employee'))->with('success', 'User created successfully.');
             } else {
                 return redirect()->to(base_url('auth/signup'))->with('error', 'Something wrong happened.');
@@ -136,9 +133,10 @@ class AuthController extends BaseController
         }
     }
 
-    public function logout() {
-         session()->destroy();
+    public function logout()
+    {
+        session()->destroy();
 
-         return redirect()->to(base_url('auth/login'))->with('success', 'Successfully logged out.');
+        return redirect()->to(base_url('auth/login'))->with('success', 'Successfully logged out.');
     }
 }

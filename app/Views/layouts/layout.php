@@ -22,17 +22,20 @@
 
     <script>
         $(document).ready(function () {
+            const delaySecond = 3;
+
             <?php if (session()->getFlashdata('success')): ?>
                 var delay = alertify.get('notifier', 'delay');
                 alertify.set('notifier', 'position', 'top-right');
-                alertify.set('notifier', 'delay', 2);
+                alertify.set('notifier', 'delay', delaySecond);
                 alertify.success('<?= session()->getFlashdata('success') ?>');
                 alertify.set('notifier', 'delay', delay);
             <?php endif; ?>
+
             <?php if (session()->getFlashdata('error')): ?>
                 var delay = alertify.get('notifier', 'delay');
                 alertify.set('notifier', 'position', 'top-right');
-                alertify.set('notifier', 'delay', 2);
+                alertify.set('notifier', 'delay', delaySecond);
                 alertify.error('<?= session()->getFlashdata('error') ?>');
                 alertify.set('notifier', 'delay', delay);
             <?php endif; ?>

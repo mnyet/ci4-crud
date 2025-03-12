@@ -34,6 +34,8 @@ class Filters extends BaseFilters
         'forcehttps'    => ForceHTTPS::class,
         'pagecache'     => PageCache::class,
         'performance'   => PerformanceMetrics::class,
+        'isLoggedIn'    => \App\Filters\IsLoggedInFilter::class,
+        'isLoggedOut'   => \App\Filters\IsLoggedOut::class
     ];
 
     /**
